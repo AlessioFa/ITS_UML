@@ -1,5 +1,6 @@
 from typing import Self, Any
 
+
 class Email:
 
     SEPARATOR = "@"
@@ -13,7 +14,7 @@ class Email:
             raise TypeError("Provider must be a string.")
 
         if domain not in self.VALID_DOMAINS:
-            raise ValueError(f"Invalid domain: {domain}.")
+            raise ValueError(f"Invalid domain: '{domain}'.")
 
         self._identity = identity
         self._provider = provider
@@ -46,21 +47,24 @@ class Email:
 
 class Telefono:
 
-    VALID_PREFIXES: str = ["+39", "+1", "+44", "+33", "+49"]
-    MIN_NUM_LENGHT: int = 6
+    VALID_PREFIXES = ["+39", "+1", "+44", "+33", "+49", "06"]
+    MIN_NUM_LENGHT = 6
 
     def __init__(self, prefix: str, number: str) -> None:
         if prefix not in self.VALID_PREFIXES:
             raise ValueError(f"Prefix '{prefix}' is not valid.")
 
-        if not isinstance(number, str) or not number.isdigit():
-            raise ValueError("Phone number must contain digits only.")
+        # Rimuovi trattini dal numero per il controllo
+        clean_number = number.replace("-", "")
 
-        if len(number) < self.MIN_NUM_LENGHT or not number.isdigit():
-            raise ValueError("Phone number has to be 6 digits long minimum.")
+        if not isinstance(clean_number, str) or not clean_number.isdigit():
+            raise ValueError("Phone number must contain digits only (ignoring dashes).")
+
+        if len(clean_number) < self.MIN_NUM_LENGHT:
+            raise ValueError("Phone number has to be 6 digits long minimum (ignoring dashes).")
 
         self._prefix = prefix
-        self._number = number
+        self._number = number  # mantieni il numero con i trattini
 
     def get_prefix(self) -> str:
         return self._prefix
@@ -74,10 +78,9 @@ class Telefono:
     def __hash__(self) -> int:
         return hash((self.get_prefix(), self.get_number()))
 
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, Telephone):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Telefono):
             return False
-
         return self.get_prefix() == other.get_prefix() and self.get_number() == other.get_number()
 
 
@@ -88,7 +91,7 @@ class Indirizzo:
     def __init__(self, address_type: str, name: str, street_number: int, cap: str) -> None:
         if address_type not in self.VALID_TYPES:
             raise ValueError(f"Type: '{type}' is not valid.")
-        
+
         if not isinstance(street_number, int):
             raise ValueError("Street number must contain digits only.")
 
@@ -124,51 +127,6 @@ class Indirizzo:
 
         return self.get_address_type() == other.get_address_type() and self.get_name() == other.get_name() \
             and self.get_street_number()
-    
-
-class Indirizzo:
-    VALID_TYPES = ["Via", "Piazza", "Viale", "Corso"]
-    MIN_CAP_LENGHT = 5
-
-    def __init__(self, address_type: str, name: str, street_number: int, cap: str) -> None:
-        if address_type not in self.VALID_TYPES:
-            raise ValueError(f"Type: '{type}' is not valid.")
-        
-        if not isinstance(street_number, int):
-            raise ValueError("Street number must contain digits only.")
-
-        if len(cap) < self.MIN_CAP_LENGHT or not cap.isdigit():
-            raise ValueError("The cap number has to be 5 digits long minimum.")
-
-        self._address_type = address_type
-        self._name = name
-        self. _street_number = street_number
-        self._cap = cap
-
-    def get_address_type(self) -> str:
-        return self._address_type
-
-    def get_name(self) -> str:
-        return self._name
-
-    def get_street_number(self) -> int:
-        return self._street_number
-
-    def get_cap(self) -> str:
-        return self._cap
-
-    def __str__(self) -> str:
-        return f"{self._address_type} {self._name} {self.street_number} {self._cap}"
-
-    def __hash__(self):
-        return hash((self.get_address_type(), self.get_name(), self. get_street_number(), self.get_cap()))
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, Address):
-            return False
-
-        return self.get_address_type() == other.get_address_type() and self.get_name() == other.get_name() \
-            and self.get_street_number() == other.get_street_number() and self.get_cap() == other.get_cap()
 
 
 class CodiceFiscale:
@@ -193,6 +151,7 @@ class CodiceFiscale:
         return hash(self.get_codice_fiscale())
 
     def __eq__(self, other: Any) -> bool:
+
         if not isinstance(other, CodiceFiscale):
             return False
 
@@ -200,34 +159,66 @@ class CodiceFiscale:
 
 
 class IntGEZ(int):
-    # Tipo di dato specializzato Intero >= 0
+    """
+    Custom integer type representing integer numbers greater than or equal to zero.
+    Accepts int, float, str, bool or another IntGZ instance.
+    Raises ValueError if the value is negative
+    """
 
     def __new__(cls, v: Self | int | float | str | bool) -> Self:
 
         value: int = super().__new__(cls, v)
 
         if value < 0:
-            raise ValueError(f"The value {v} must be greater than or equal to zero")
+            raise ValueError(f"The value {v} must be greater than or equal to zero.")
+
         return value
 
 
 class IntGZ(int):
-    # Tipo di dato specializzato Intero > 0
+    """
+    Custom integer type representing integer numbers greater than zero.
+    Accepts int, float, str, bool or another IntGZ instance.
+    Raises ValueError if the value is negative
+    """
      
     def __new__(cls, v: Self | int | float | str | bool) -> Self:
-        value: int  = super().__new__(cls, v)
-        if value <= 0:
-            raise ValueError(f"The value {v} must be greater than zero")
-        return value
-    
-
-class RealGZ(int):
-    # Tipo di dato specializzato Intero > 0
-
-    def __new__(cls, v: Self | int | float | str | bool) -> Self:
-
         value: int = super().__new__(cls, v)
         
         if value <= 0:
-            raise ValueError(f"The value {v} must be greater than zero")
+            raise ValueError(f"The value {v} must be greater than zero.")
+        
+        return value
+    
+
+class RealGZ(float):
+    """
+    Custom float type representing real numbers greater than or equal to zero.
+    Accepts int, float, str, bool or another RealGEZ instance.
+    Raises ValueError if the value is negative.
+    """
+
+    def __new__(cls, v: Self | int | float | str | bool) -> Self:
+        value: float = super().__new__(cls, v)
+        
+        if value <= 0:
+            raise ValueError(f"The value {v} must be greater than zero.")
+        
+        return value
+
+
+class RealGEZ(float):
+    """
+    Custom float type representing real numbers greater than or equal to zero.
+    Accepts int, float, str, bool or another RealGEZ instance.
+    Raises ValueError if the value is negative.
+    """
+
+    def __new__(cls, v: Self | int | float | str | bool) -> Self:
+
+        value: float = super().__new__(cls, v)
+        
+        if value < 0:
+            raise ValueError(f"The value {v} must be equal or greater than zero.")
+        
         return value

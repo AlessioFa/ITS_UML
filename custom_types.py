@@ -1,101 +1,4 @@
-from typing import Any
-
-"""
-This module restructures some UML-based classes into special Python classes.
-
-Each class checks that the values are valid.
-
-For clarity, I will add detailed code comments soon.
-"""
-
-"""Here I define some custom primitive types."""
-
-
-class PositiveInt(int):
-    def __new__(cls, value: int) -> int:
-        if not isinstance(value, int):
-            raise TypeError("The number must be an integer.")
-
-        if value <= 0:
-            raise ValueError("The number must be greater than 0.")
-
-        return super().__new__(cls, value)
-
-
-class PositiveReal(float):
-    def __new__(cls, value: float) -> float:
-        if not isinstance(value, (int, float)):
-            raise TypeError("The number must be an integer or a float.")
-
-        if value <= 0:
-            raise ValueError("The number must be greater than 0.")
-
-        return super().__new__(cls, value)
-
-
-
-"""This part represents some personal identifiers, like Codice Fiscale and Partita IVA."""
-
-
-class CodiceFiscale:
-
-    CF_LENGHT = 16
-
-    def __init__(self, codice_fiscale: str) -> None:
-        if len(codice_fiscale) != self.CF_LENGHT:
-            raise ValueError("The codice fiscale must be 16 character long.")
-
-        if not codice_fiscale.isalnum():
-            raise ValueError("The codice fiscale must contain letters and digits only.")
-
-        self._codice_fiscale = codice_fiscale.upper()
-
-    def get_codice_fiscale(self) -> str:
-        return self._codice_fiscale
-
-    def __str__(self) -> str:
-        return f"{self._codice_fiscale}"
-
-    def __hash__(self):
-        return hash(self.get_codice_fiscale())
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, CodiceFiscale):
-            return False
-
-        return self.get_codice_fiscale() == other.get_codice_fiscale
-
-
-class PartitaIva:
-
-    PI_LENGHT = 11
-
-    def __init__(self, partita_iva: str) -> None:
-        if len(partita_iva) != self.PI_LENGHT:
-            raise ValueError("The partita iva must be 11 digits long.")
-
-        if not partita_iva.isdigit():
-            raise ValueError("The partita iva must contain digits only.")
-
-        self._partita_iva = partita_iva
-
-    def get_partita_iva(self) -> str:
-        return self._partita_iva
-
-    def __str__(self) -> str:
-        return f"{self._partita_iva}"
-
-    def __hash__(self):
-        return hash(self.get_partita_iva())
-
-    def __eq__(self,other: Any) -> bool:
-        if not isinstance(other, PartitaIva):
-            return False
-
-        return self.get_partita_iva() == other.get_partita_iva()
-
-
-"""This part represents a person's contact information."""
+from typing import Self, Any
 
 
 class Email:
@@ -142,7 +45,7 @@ class Email:
         return (self.get_identity() == other.get_identity() and self.get_provider() == other.get_provider() and self.get_domain() == other.get_domain())
 
 
-class Telephone:
+class Telefono:
 
     VALID_PREFIXES: str = ["+39", "+1", "+44", "+33", "+49"]
     MIN_NUM_LENGHT: int = 6
@@ -179,15 +82,14 @@ class Telephone:
         return self.get_prefix() == other.get_prefix() and self.get_number() == other.get_number()
 
 
-class Address:
-
+class Indirizzo:
     VALID_TYPES = ["Via", "Piazza", "Viale", "Corso"]
     MIN_CAP_LENGHT = 5
 
     def __init__(self, address_type: str, name: str, street_number: int, cap: str) -> None:
         if address_type not in self.VALID_TYPES:
             raise ValueError(f"Type: '{type}' is not valid.")
-
+        
         if not isinstance(street_number, int):
             raise ValueError("Street number must contain digits only.")
 
@@ -215,7 +117,52 @@ class Address:
         return f"{self._address_type} {self._name} {self.street_number} {self._cap}"
 
     def __hash__(self):
-        return hash((self.get_address_type(), self.get_name(), self.get_street_number(), self.get_cap()))
+        return hash((self.get_address_type(), self.get_name(), self. get_street_number(), self.get_cap()))
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Address):
+            return False
+
+        return self.get_address_type() == other.get_address_type() and self.get_name() == other.get_name() \
+            and self.get_street_number()
+    
+
+class Indirizzo:
+    VALID_TYPES = ["Via", "Piazza", "Viale", "Corso"]
+    MIN_CAP_LENGHT = 5
+
+    def __init__(self, address_type: str, name: str, street_number: int, cap: str) -> None:
+        if address_type not in self.VALID_TYPES:
+            raise ValueError(f"Type: '{type}' is not valid.")
+        
+        if not isinstance(street_number, int):
+            raise ValueError("Street number must contain digits only.")
+
+        if len(cap) < self.MIN_CAP_LENGHT or not cap.isdigit():
+            raise ValueError("The cap number has to be 5 digits long minimum.")
+
+        self._address_type = address_type
+        self._name = name
+        self. _street_number = street_number
+        self._cap = cap
+
+    def get_address_type(self) -> str:
+        return self._address_type
+
+    def get_name(self) -> str:
+        return self._name
+
+    def get_street_number(self) -> int:
+        return self._street_number
+
+    def get_cap(self) -> str:
+        return self._cap
+
+    def __str__(self) -> str:
+        return f"{self._address_type} {self._name} {self.street_number} {self._cap}"
+
+    def __hash__(self):
+        return hash((self.get_address_type(), self.get_name(), self. get_street_number(), self.get_cap()))
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Address):
@@ -223,3 +170,98 @@ class Address:
 
         return self.get_address_type() == other.get_address_type() and self.get_name() == other.get_name() \
             and self.get_street_number() == other.get_street_number() and self.get_cap() == other.get_cap()
+
+
+class CodiceFiscale:
+    LENGHT = 16
+
+    def __init__(self, codice_fiscale: str) -> None:
+        if len(codice_fiscale) != self.LENGHT:
+            raise ValueError("The codice fiscale must be 16 character long.")
+
+        if not codice_fiscale.isalnum():
+            raise ValueError("The codice fiscale must contain letters and digits only.")
+
+        self._codice_fiscale = codice_fiscale.upper()
+
+    def get_codice_fiscale(self) -> str:
+        return self._codice_fiscale
+
+    def __str__(self) -> str:
+        return f"{self._codice_fiscale}"
+
+    def __hash__(self):
+        return hash(self.get_codice_fiscale())
+
+    def __eq__(self, other: Any) -> bool:
+        
+        if not isinstance(other, CodiceFiscale):
+            return False
+
+        return self.get_codice_fiscale() == other.get_codice_fiscale
+
+
+class IntGEZ(int):
+    """
+    Custom integer type representing integer numbers greater than or equal to zero.
+    Accepts int, float, str, bool or another IntGZ instance.
+    Raises ValueError if the value is negative
+    """
+
+    def __new__(cls, v: Self | int | float | str | bool) -> Self:
+
+        value: int = super().__new__(cls, v)
+
+        if value < 0:
+            raise ValueError(f"The value {v} must be greater than or equal to zero.")
+
+        return value
+
+
+class IntGZ(int):
+    """
+    Custom integer type representing integer numbers greater than zero.
+    Accepts int, float, str, bool or another IntGZ instance.
+    Raises ValueError if the value is negative
+    """
+     
+    def __new__(cls, v: Self | int | float | str | bool) -> Self:
+        value: int = super().__new__(cls, v)
+        
+        if value <= 0:
+            raise ValueError(f"The value {v} must be greater than zero.")
+        
+        return value
+    
+
+class RealGZ(float):
+    """
+    Custom float type representing real numbers greater than or equal to zero.
+    Accepts int, float, str, bool or another RealGEZ instance.
+    Raises ValueError if the value is negative.
+    """
+
+    def __new__(cls, v: Self | int | float | str | bool) -> Self:
+        value: float = super().__new__(cls, v)
+        
+        if value <= 0:
+            raise ValueError(f"The value {v} must be greater than zero.")
+        
+        return value
+
+
+class RealGEZ(float):
+    """
+    Custom float type representing real numbers greater than or equal to zero.
+    Accepts int, float, str, bool or another RealGEZ instance.
+    Raises ValueError if the value is negative.
+    """
+
+    def __new__(cls, v: Self | int | float | str | bool) -> Self:
+
+        value: float = super().__new__(cls, v)
+        
+        if value < 0:
+            raise ValueError(f"The value {v} must be equal or greater than zero.")
+        
+        return value
